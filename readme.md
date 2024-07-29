@@ -12,7 +12,7 @@ This library is designed to help speed up the process of creating OpenTelemetry 
  - Overridable functions in Service for custom implementations.
 
 ## Example
-
+### Setup
 Metric Enumeration:
 
     /// <summary>
@@ -42,7 +42,45 @@ To add the metrics to DI:
 
     services.AddMetricsService<MyMetricLong>(true)
 
-This will:
+### Use
+Here is an example of using DI to inject the metric service.
+```
+public class MyService(
+    IMetricsService<MyMetricLong> metricsService // Short for IMetricsService<MyMetricLong, long
+        )
+{
+    public void SomeMethod()
+    {
+        /* Do Stuff */
+ 
+        // Inc Counter
+        metricsService.IncCounter( // Call assumes the increment amount is 1 since not provided in this variation of IncCounter().
+            MyMetricLong.CounterMetric, // Metric Identifier (only has one instrument so we don't need to specify the instrument in this case.)
+            new KeyValuePair<string, object?>("Tag1", "Required Tag 1 Value"), // Required based on MeterDefinitionAttribute on MyMetricLong
+            new KeyValuePair<string, object?>("Tag2", "Required Tag 2 Value"), // Required based on MeterDefinitionAttribute on MyMetricLong
+            new KeyValuePair<string, object?>("CounterName", "My Counter Name") // Required based on MetricDefinitionAttribute on MyMetricLong.CounterMetric
+            );
+ 
+        /* Do More Stuff */
+    }
+ 
+    public void AnotherMethod()
+    {
+        using var counterDisposable = metricsService.CreateDisposableCounter( // Call Increments the counter by one and returns an IDisposable that will decrement the counter when .Dispose() is called.
+            MyMetricLong.EverythingMetric, // Metric Identifier, which defines all 3 instruments! Since this will both increase and decrease the counter, it must be an Up/Down Counter so that is what will be used.
+            new KeyValuePair<string, object?>("Tag1", "Required Tag 1 Value"), // Required based on MeterDefinitionAttribute on MyMetricLong
+            new KeyValuePair<string, object?>("Tag2", "Required Tag 2 Value") // Required based on MeterDefinitionAttribute on MyMetricLong
+            );
+ 
+ 
+        /* Do Stuff */
+ 
+        /* counterDisposable.Dispose() called when variable goes out of scope.  This decreases the counter by 1. */
+    }
+}
+```
+
+### Results
 
  - Add a new Meter called "My.Meter.Namespace" as Version 'beta-1.0' and tag 'MyMetricTag='MyMetricTagValue'.  All Metrics will require tags named 'Tag1' and 'Tag2' (or a MissingRequiredTagsException will be thrown).
  - Add services in DI called IMetricsService< MyMetricLong > and IMetricsService< MyMetricLong, long >.
