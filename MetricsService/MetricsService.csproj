@@ -7,11 +7,18 @@
     <Title>Metrics Service</Title>
     <Description>Bootstrap the creation of DI services and Meters for OpenTelemetry Metrics.</Description>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+      <PackageReadmeFile>readme.md</PackageReadmeFile>
+      <PackageLicenseFile>license.txt</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\readme.md" Pack="true" PackagePath="\"/>
+        <None Include="..\license.txt" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
 </Project>
